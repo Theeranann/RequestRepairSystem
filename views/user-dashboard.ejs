@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User</title>
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="container" style="margin-top: 50px">
+    <div class="container">
+      <h1>Welcome <%= email %>!</h1>
+      <h1 class="my-5">Welcome to our repair service</h1>
+      <p>This is the user dashboard.</p>
+      <a href="/logout">Logout</a>
+      <p>We offer high-quality repairs for a variety of products, including:</p>
+      <ul>
+        <li>Laptops</li>
+        <li>Desktops</li>
+        <li>Smartphones</li>
+        <li>Tablets</li>
+        <li>Televisions</li>
+      </ul>
+      <p>
+        Our expert technicians have years of experience and are dedicated to
+        providing fast and efficient repairs.
+      </p>
+      <a href="/repair" class="btn btn-primary my-3">Request a repair</a>
+    </div>
+  </body>
+</html>
