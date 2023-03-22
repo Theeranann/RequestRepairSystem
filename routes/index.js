@@ -114,6 +114,59 @@ router.get("/add", (req, res, next) => {
   });
 });
 
+
+
+// update page
+router.post("/admin_update/:id", (req, res, next) => {
+  let id = req.params.id;
+  let repair_type = req.body.status_type;
+  let details = req.body.details;
+  let location = req.body.location;
+  let name = req.body.name;
+  let email = req.body.email;
+  let errors = false;
+
+  if (repair_type.length === 0) {
+    errors = true;
+    req.flash("error", "Please enter");
+    res.render("admin-edit", {
+      id: req.params.id,
+    });
+  }
+  // if no error
+  if (!errors) {
+    let form_data = {
+      repair_status_id: repair_type,
+      detail: details,
+      location: location,
+      name: name,
+      email: email,
+    };
+    // update query
+    dbCon.query(
+      "UPDATE repair SET ? WHERE id = " + id,
+      form_data,
+      (err, result) => {
+        if (err) {
+          req.flash("error", err);
+          res.render("admin-edit", {
+            id: req.params.id,
+            repair_type: form_data.repair_type,
+            details: form_data.details,
+            location: form_data.location,
+            name: form_data.name,
+            email: form_data.email,
+          });
+        } else {
+          req.flash("success", "successfully updated");
+          res.redirect("/repair_list");
+        }
+      }
+    );
+  }
+});
+
+
 // add a new type
 router.post("/add", (req, res, next) => {
   let name = req.body.name;

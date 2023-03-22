@@ -22,15 +22,18 @@ router.get("/", (req, res, next) => {
 
 // display add page
 router.get("/add", (req, res, next) => {
-    res.render("repair/add", {
+  dbCon.query('SELECT * FROM repair_type', function(err, results) {
+    if (err) throw err;
+    // Pass the retrieved option values to an EJS template as a variable
+    res.render('repair/add', 
+    { options: results,
       repair_type: "",
       details: "",
       location: "",
       name: "",
-      email: "",
-    });
+      email: "" });
+  });
 });
-
 
 // add a new
 router.post("/add", (req, res, next) => {
@@ -96,14 +99,19 @@ router.get("/edit/(:id)", (req, res, next) => {
       req.flash("error", "Book not found with id = " + id);
       res.redirect("/repair");
     } else {
-      res.render("repair/edit", {
-        title: "Edit repair",
-        id: rows[0].id,
-        repair_type: rows[0].repair_type_id,
-        details: rows[0].detail,
-        location: rows[0].location,
-        name: rows[0].name,
-        email: rows[0].email,
+      dbCon.query("SELECT * FROM repair_type", (err, repairTypes, fields) => {
+        if (err) throw err;
+
+        res.render("repair/edit", {
+          title: "Edit repair",
+          id: rows[0].id,
+          details: rows[0].detail,
+          location: rows[0].location,
+          name: rows[0].name,
+          email: rows[0].email,
+          repairTypes: repairTypes,
+          selectedRepairType: rows[0].type_name
+        });
       });
     }
   });
@@ -118,14 +126,13 @@ router.post("/update/:id", (req, res, next) => {
   let name = req.body.name;
   let email = req.body.email;
   let errors = false;
+  console.log(req.body);
 
   if (name.length === 0) {
     errors = true;
     req.flash("error", "Please enter");
     res.render("repair/edit", {
       id: req.params.id,
-      name: name,
-      author: author,
     });
   }
   // if no error
