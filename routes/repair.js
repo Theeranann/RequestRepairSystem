@@ -22,13 +22,17 @@ router.get("/", (req, res, next) => {
 
 // display add page
 router.get("/add", (req, res, next) => {
-    res.render("repair/add", {
+  dbCon.query('SELECT * FROM repair_type', function(err, results) {
+    if (err) throw err;
+    // Pass the retrieved option values to an EJS template as a variable
+    res.render('repair/add', 
+    { options: results,
       repair_type: "",
       details: "",
       location: "",
       name: "",
-      email: "",
-    });
+      email: "" });
+  });
 });
 
 
@@ -42,7 +46,7 @@ router.post("/add", (req, res, next) => {
   let email = req.body.email;
   let errors = false;
 
-  if (name.length === 0 || repair_type.length === 0) {
+  if (name.length === 0 || repair_type == null ) {
     errors = true;
     // set flash message
     req.flash("error", "Please enter");
@@ -88,26 +92,80 @@ router.post("/add", (req, res, next) => {
 });
 
 // display edit page
+// router.get("/edit/(:id)", (req, res, next) => {
+//   let id = req.params.id;
+
+//   dbCon.query("SELECT * FROM repair JOIN repair_type ON repair_type_id = repair_type.id WHERE repair.id = " + id, (err, rows, fields) => {
+//     if (rows.length <= 0) {
+//       req.flash("error", "not found with id = " + id);
+//       res.redirect("/repair");
+//     } else {
+//       res.render("repair/edit", {
+//         title: "Edit repair",
+//         id: rows[0].id,
+//         // repair_type: rows[0].repair_type_id,
+//         repair_type: rows[0].type_name,
+//         details: rows[0].detail,
+//         location: rows[0].location,
+//         name: rows[0].name,
+//         email: rows[0].email,
+//       });
+//     }
+//   });
+// });
 router.get("/edit/(:id)", (req, res, next) => {
   let id = req.params.id;
 
-  dbCon.query("SELECT * FROM repair WHERE id = " + id, (err, rows, fields) => {
+  dbCon.query("SELECT * FROM repair JOIN repair_type ON repair_type_id = repair_type.id WHERE repair.id = " + id, (err, rows, fields) => {
     if (rows.length <= 0) {
-      req.flash("error", "Book not found with id = " + id);
+      req.flash("error", "not found with id = " + id);
       res.redirect("/repair");
     } else {
-      res.render("repair/edit", {
-        title: "Edit repair",
-        id: rows[0].id,
-        repair_type: rows[0].repair_type_id,
-        details: rows[0].detail,
-        location: rows[0].location,
-        name: rows[0].name,
-        email: rows[0].email,
+      dbCon.query("SELECT * FROM repair_type", (err, repairTypes, fields) => {
+        if (err) throw err;
+
+        res.render("repair/edit", {
+          title: "Edit repair",
+          id: rows[0].id,
+          details: rows[0].detail,
+          location: rows[0].location,
+          name: rows[0].name,
+          email: rows[0].email,
+          repairTypes: repairTypes,
+          selectedRepairType: rows[0].type_name
+        });
       });
     }
   });
 });
+
+router.post("/update/(:id)", (req, res, next) => {
+  let id = req.params.id;
+  let repairType = req.body.repair_type;
+  let details = req.body.details;
+  let location = req.body.location;
+  let name = req.body.name;
+  let email = req.body.email;
+
+  let errors = false;
+
+  if (repairType === '') {
+    errors = true;
+    req.flash('error', 'Please select a repair type');
+    res.redirect('/repair/edit/' + id);
+  }
+
+  if (!errors) {
+    let sql = "UPDATE repair SET repair_type_id=?, detail=?, location=?, name=?, email=? WHERE id=?";
+    dbCon.query(sql, [repairType, details, location, name, email, id], (err, result) => {
+      if (err) throw err;
+
+      req.flash("success", "repair successfully updated");
+      res.redirect("/repair");
+    });
+  }
+});
+
 
 // update page
 router.post("/update/:id", (req, res, next) => {
@@ -124,8 +182,6 @@ router.post("/update/:id", (req, res, next) => {
     req.flash("error", "Please enter");
     res.render("repair/edit", {
       id: req.params.id,
-      name: name,
-      author: author,
     });
   }
   // if no error
